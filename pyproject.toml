@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "resolution_week4_Waffl"
-version = "0.0.1"
+version = "0.0.2s"
 dependencies = [ "fastapi[standard]", "slowapi" ] # You may need to add more here if you are using redis or something similar
 
 [project.scripts]

@@ -11,9 +11,9 @@ import datetime
 
 #later on make it so theres a collection per person (by api key) so everything can be diffrent per person
 
-def log_request(route: str, api_key: str):
+def log_request(route: str):
     with open("requests.log", "a") as f:
-        f.write(f"{datetime.datetime.now()} - {route} - {api_key}\n")
+        f.write(f"{datetime.datetime.now()} - {route} - \n")
 # logging for /add
 
 app = FastAPI()
@@ -79,7 +79,7 @@ async def get_secret_data():
 class Card(BaseModel):
     card_name: str
     card_set: str
-    card_number: str
+    card_number: int
     condition: str
     est_value: int
 #class setup for adding cards
@@ -112,7 +112,7 @@ async def get_collection(request: Request):
 
 @app.post("/add", dependencies=[Depends(verify_api_key)])
 async def add_card(card: Card, background_tasks: BackgroundTasks):
-    background_tasks.add_task(log_request, "/add", "some_key")
+    background_tasks.add_task(log_request, "/add")
     conn = sqlite3.connect("collection.db")
     cursor = conn.cursor()
 
@@ -121,6 +121,8 @@ async def add_card(card: Card, background_tasks: BackgroundTasks):
     (card.card_name, card.card_set, card.card_number, card.condition, card.est_value)
 )
     conn.commit()
+    cursor.close()
+    conn.close()
     return f"Card {card.card_name} added"
 #adds a new card using the Card Class (reuqires api key) (this gets logged)
 
@@ -136,7 +138,9 @@ async def update(card_id: int, upd_cond: str | None = None, upd_val: int | None 
     if card_name is None:
         conn.close()
         raise HTTPException(status_code=404, detail=f"Card with id {card_id} not found")
-
+    elif upd_cond is None and upd_val is None:
+        conn.close()
+        raise HTTPException(status_code=400, detail="No update provided")
     elif upd_val is None and upd_cond is not None:
         cursor.execute("""
         UPDATE collection
@@ -196,9 +200,12 @@ def total_value():
 
     if total_val is None:
         conn.close()
+        cursor.close()
         raise HTTPException(status_code=404, detail="No cards in database with value to calculate")
-    
-    return {"total_value": total_val}
+    else:
+        conn.close()
+        cursor.close()
+        return {"total_value": total_val}
 #calculate and return total value of collection
 
 def main():

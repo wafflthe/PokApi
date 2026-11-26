@@ -17,3 +17,5 @@ Allows a card to be deleted from the database based on id: /delete/{card_id}
 Shows all estimated values combined for a total collection value: /total_value
 
 Download from TestPiPy here: https://test.pypi.org/project/resolution-week4-Waffl/
+
+Currently being hosted and accessible at: https://pokapi.squilbert.hackclub.app/docs#
